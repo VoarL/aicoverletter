@@ -29,6 +29,7 @@ def generate_cover_letter():
         position = data.get('position')
         job_description = data.get('job_description')
         company_website = data.get('company_website')
+        previous_cover_letter = data.get('previous_cover_letter')
 
         # Construct the prompt
         prompt1 = f"""
@@ -36,7 +37,14 @@ def generate_cover_letter():
         The job description is as follows: {job_description}.
         Here is the candidate's resume: {resume}.
         The company website is {company_website}.
+        Use Previous Cover Letter for ideas about me: {previous_cover_letter}
         Please format the cover letter in a concise and formal tone.
+        Use the following template for ideas for each paragraphs: 
+            I would then do a paragraph about why I am interested in the company and position (why I want to work here and why I am applying) connecting back to how my interests/values/work culture align with that of the job
+
+            I would then go into another paragraph touching on how my technical skills would make me excel at the job (look at the job description and see how your skills and past experiences fit into that).
+
+            I would then end with a quick outro of I'm excited about the position and I look forward to talking with your further about the job opportunity.
         """
         #print(f"Generated prompt: {prompt1}")  # Log the generated prompt
 
@@ -47,12 +55,22 @@ def generate_cover_letter():
             max_tokens = 1400,
             temperature = 0.7,
         )
-        print(f"API response: {response}")  # Log the response from OpenAI
+        #print(f"API response: {response}")  # Log the response from OpenAI
 
         # Extract and return the cover letter
         cover_letter = response.choices[0].text.strip()  # Correct way to get message content
-        print(f"Generated cover letter: {cover_letter}")  # Log the final cover letter
-        return jsonify({'cover_letter': cover_letter})
+
+        # Replace double newlines with <p> tags for paragraphs
+        cover_letter_html = cover_letter.replace('\n\n', '</p><p>').strip()
+
+        # Wrap the entire content in <p> tags if not already wrapped
+        cover_letter_html = f"<p>{cover_letter_html}</p>"
+
+        # Replace single newlines with <br /> for line breaks within paragraphs
+        cover_letter_html = cover_letter_html.replace('\n', '<br />')
+        
+        #print(f"Generated cover letter: {cover_letter}")  # Log the final cover letter
+        return jsonify({'cover_letter': cover_letter_html})
 
     except Exception as e:
         # Log any errors that occur
